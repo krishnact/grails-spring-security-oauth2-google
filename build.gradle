@@ -17,7 +17,7 @@ setIfNotSet 'issueTrackerUrl', project.vcsUrl + '/issues'
 setIfNotSet 'websiteUrl', project.vcsUrl
 
 version "1.5.1.BUILD-SNAPSHOT"
-group "grails.spring.security.oauth2"
+group "org.himalay.grails.spring.security.oauth2"
 
 apply plugin:"eclipse"
 apply plugin:"idea"
