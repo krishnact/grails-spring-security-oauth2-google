@@ -1,8 +1,10 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### Gradle template
+Thumbs.db
+.DS_Store
 .gradle
 build/
-
+out/
 # Ignore Gradle GUI config
 gradle-app.setting
 

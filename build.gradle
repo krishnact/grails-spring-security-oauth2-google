@@ -1,17 +1,13 @@
 buildscript {
-    ext {
-        grailsVersion = project.grailsVersion
-    }
     repositories {
-        mavenLocal()
+        maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://repo.grails.org/grails/core" }
     }
     dependencies {
-        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.15.1"
+        classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:3.3.4"
     }
 }
-
 def setIfNotSet = { String name, value ->
     if (!project.ext.has(name)) {
         project.ext[name] = value
@@ -20,15 +16,16 @@ def setIfNotSet = { String name, value ->
 setIfNotSet 'issueTrackerUrl', project.vcsUrl + '/issues'
 setIfNotSet 'websiteUrl', project.vcsUrl
 
-version "1.2.1.BUILD-SNAPSHOT"
-group = 'org.grails.plugins'
+version "1.5.1.BUILD-SNAPSHOT"
+group "grails.spring.security.oauth2"
 
 apply plugin:"eclipse"
-apply plugin: "idea"
-apply plugin: "org.grails.grails-plugin"
-apply plugin: "org.grails.grails-plugin-publish"
+apply plugin:"idea"
+apply plugin:"org.grails.grails-plugin"
+//apply plugin: "org.grails.grails-plugin-publish"
 apply plugin: "org.grails.grails-gsp"
 apply plugin: "asset-pipeline"
+apply plugin: "maven-publish"
 
 ext {
     grailsVersion = project.grailsVersion
@@ -36,53 +33,100 @@ ext {
 }
 
 repositories {
-    mavenLocal()
+    mavenCentral()
     maven { url "https://repo.grails.org/grails/core" }
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.grails:grails-bom:$grailsVersion"
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
     }
-    applyMavenExclusions false
 }
 
 dependencies {
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    compileOnly "io.micronaut:micronaut-inject-groovy"
     console "org.grails:grails-console"
-
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "org.grails:grails-core"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-tomcat"
+    implementation "org.grails:grails-web-boot"
+    implementation "org.grails:grails-logging"
+    implementation "org.grails:grails-plugin-rest"
+    implementation "org.grails:grails-plugin-databinding"
+    implementation "org.grails:grails-plugin-i18n"
+    implementation "org.grails:grails-plugin-services"
+    implementation "org.grails:grails-plugin-url-mappings"
+    implementation "org.grails:grails-plugin-interceptors"
+    implementation "org.grails.plugins:cache"
+    implementation "org.grails.plugins:async"
+    implementation "org.grails.plugins:scaffolding"
+    implementation "org.grails.plugins:gsp"
+    implementation 'org.grails.plugins:spring-security-oauth2:2.0.0-RC1'
     profile "org.grails.profiles:web-plugin"
-
-    provided 'javax.servlet:javax.servlet-api:3.1.0'
-    provided 'org.grails:grails-dependencies'
-    provided 'org.grails.plugins:spring-security-core:3.2.+'
-    provided 'org.grails.plugins:spring-security-oauth2:1.2.0'
-    provided "org.grails:grails-plugin-services"
-
-    runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.15.1"
-
-    testCompile "cglib:cglib-nodep:2.2.2"
-    testCompile "org.grails:grails-plugin-testing"
-    testCompile "org.grails:grails-web-testing-support"
+    runtimeOnly "com.bertramlabs.plugins:asset-pipeline-grails:3.3.4"
+    testImplementation "io.micronaut:micronaut-inject-groovy"
+    testImplementation "org.grails:grails-gorm-testing-support"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.grails:grails-web-testing-support"
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = gradleWrapperVersion
+bootRun {
+    ignoreExitValue true
+    jvmArgs(
+        '-Dspring.output.ansi.enabled=always', 
+        '-noverify', 
+        '-XX:TieredStopAtLevel=1',
+        '-Xmx1024m')
+    sourceResources sourceSets.main
+    String springProfilesActive = 'spring.profiles.active'
+    systemProperty springProfilesActive, System.getProperty(springProfilesActive)
 }
 
-grailsPublish {
-    user = System.getProperty("BINTRAY_USER")
-    key = System.getProperty("BINTRAY_KEY")
-    githubSlug = 'grails-plugins/grails-spring-security-oauth2-google'
-    license {
-        name = 'Apache-2.0'
+tasks.withType(GroovyCompile) {
+    configure(groovyOptions) {
+        forkOptions.jvmArgs = ['-Xmx1024m']
     }
-    title = "Spring Security Oauth2 Google Provider"
-    desc = "This plugin provides the capability to authenticate via g+-oauth provider. Depends on grails-spring-security-oauth2. v1.2.0 starts after fork to grails-plugins org. Includes unreleased 1.1.1 from other repo."
-    developers = [MatrixCrawler: "Johannes Brunswicker",
-                  rvanderwerf   : "Ryan Vanderwerf"]
-    userOrg = 'grails'
 }
+//task wrapper(type: Wrapper) {
+//    gradleVersion = gradleWrapperVersion
+//}
 
+tasks.withType(Test) {
+    useJUnitPlatform()
+}
+// enable if you wish to package this plugin as a standalone application
+bootJar.enabled = false
+
+//grailsPublish {
+//    user = System.getProperty("BINTRAY_USER")
+//    key = System.getProperty("BINTRAY_KEY")
+//    githubSlug = 'grails-plugins/grails-spring-security-oauth2-google'
+//    license {
+//        name = 'Apache-2.0'
+//    }
+//    title = "Spring Security Oauth2 Google Provider"
+//    desc = "This plugin provides the capability to authenticate via g+-oauth provider. Depends on grails-spring-security-oauth2. v1.2.0 starts after fork to grails-plugins org. Includes unreleased 1.1.1 from other repo."
+//    developers = [MatrixCrawler: "Johannes Brunswicker",
+//                  rvanderwerf   : "Ryan Vanderwerf"]
+//    userOrg = 'grails'
+//}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = group
+            artifactId = rootProject.name
+            version = version
+
+            from components.java
+        }
+    }
+}
 assets {
     packagePlugin = true
 }

@@ -1,30 +1,27 @@
 package grails.plugin.springsecurity.oauth2.google
 
-import grails.plugin.springsecurity.ReflectionUtils
-import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.plugin.springsecurity.oauth2.SpringSecurityOauth2BaseService
 import grails.plugin.springsecurity.oauth2.exception.OAuth2Exception
-import grails.plugins.Plugin
-import groovy.util.logging.Slf4j
+import grails.plugin.springsecurity.ReflectionUtils
+import grails.plugin.springsecurity.SpringSecurityUtils
+import grails.plugins.*
 import org.slf4j.LoggerFactory
 
-@Slf4j
-class SpringSecurityOauth2GoogleGrailsPlugin extends Plugin {
+class GrailsSpringSecurityOauth2GoogleGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "3.1.8 > *"
+    def grailsVersion = "5.3.2 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-            "grails-app/views/error.gsp"
+        "grails-app/views/error.gsp"
     ]
-    List loadAfter = ['spring-security-oauth2']
 
     // TODO Fill in these fields
-    def title = "Spring Security Oauth2 Google Provider" // Headline display name of the plugin
-    def author = "Johannes Brunswicker"
-    def authorEmail = "johannes.brunswicker@gmail.com"
+    def title = "Grails Spring Security Oauth2 Google" // Headline display name of the plugin
+    def author = "Your name"
+    def authorEmail = ""
     def description = '''\
-This plugin provides the capability to authenticate via g+-oauth provider. Depends on grails-spring-security-oauth2.
+Brief summary/description of the plugin.
 '''
     def profiles = ['web']
 
@@ -34,7 +31,7 @@ This plugin provides the capability to authenticate via g+-oauth provider. Depen
     // Extra (optional) plugin metadata
 
     // License: one of 'APACHE', 'GPL2', 'GPL3'
-    def license = "APACHE"
+//    def license = "APACHE"
 
     // Details of company behind the plugin (if there is one)
 //    def organization = [ name: "My Company", url: "http://www.my-company.com/" ]
@@ -68,7 +65,7 @@ This plugin provides the capability to authenticate via g+-oauth provider. Depen
             }
 
             if (!hasProperty('log')) {
-                this.metaClass.log = LoggerFactory.getLogger(SpringSecurityOauth2GoogleGrailsPlugin)
+                this.metaClass.log = LoggerFactory.getLogger(GrailsSpringSecurityOauth2GoogleGrailsPlugin.class)
             }
 
             if (printStatusMessages) {
@@ -79,6 +76,11 @@ This plugin provides the capability to authenticate via g+-oauth provider. Depen
                 println("... finished configuring Spring Security OAuth2 Google\n")
             }
         }
+    }
+
+
+    void doWithDynamicMethods() {
+        // TODO Implement registering dynamic methods to classes (optional)
     }
 
     @Override
@@ -92,5 +94,21 @@ This plugin provides the capability to authenticate via g+-oauth provider. Depen
             log.error("There was an oAuth2Exception", exception)
             log.error("OAuth2 Google not loaded")
         }
+    }
+
+
+    void onChange(Map<String, Object> event) {
+        // TODO Implement code that is executed when any artefact that this plugin is
+        // watching is modified and reloaded. The event contains: event.source,
+        // event.application, event.manager, event.ctx, and event.plugin.
+    }
+
+    void onConfigChange(Map<String, Object> event) {
+        // TODO Implement code that is executed when the project configuration changes.
+        // The event is the same as for 'onChange'.
+    }
+
+    void onShutdown(Map<String, Object> event) {
+        // TODO Implement code that is executed when the application shuts down (optional)
     }
 }
